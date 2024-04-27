@@ -201,7 +201,7 @@ struct Anisotropic : Isotropic<RayDirInfo>
 }
 
 NBL_CONCEPT_TYPE_PARAMS(typename T)
-NBL_CONCEPT_SIGNATURE(sample, T t)
+NBL_CONCEPT_SIGNATURE(light_sample, T t)
 NBL_CONCEPT_BODY
 (
     {T::scalar_t()} -> concepts::scalar;
