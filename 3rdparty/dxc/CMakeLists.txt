@@ -67,8 +67,7 @@ endif()
 
 # perform DXC compile standard requirement test
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-# TODO: Don't they support a higher standard now, like 17 ?
-set(CMAKE_CXX_STANDARD 11) # compiler must support exactly c++11 or c++14 standard in order to be able to build DXC libraries
+set(CMAKE_CXX_STANDARD 17) # compiler must support C++17
 
 try_compile(DXC_COMPILE_TEST_PASSED
 	SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/test/test.cpp"
@@ -82,24 +81,13 @@ if(DXC_COMPILE_TEST_PASSED)
 else()
 	message(FATAL_ERROR "${DXC_COMPILE_RET_VAL}")
 endif()
+################################
 
-set(DXC_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/build" CACHE INTERNAL "")
+include("${CMAKE_CURRENT_SOURCE_DIR}/dxc/cmake/caches/PredefinedParams.cmake")
+add_subdirectory(dxc dxc EXCLUDE_FROM_ALL)
+set(DXC_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/dxc")
 
-if(MSVC AND (NOT "${CMAKE_GENERATOR}" STREQUAL "Ninja Multi-Config" AND NOT "${CMAKE_GENERATOR}" STREQUAL "Ninja"))
-	execute_process(COMMAND "${CMAKE_COMMAND}" -C "${CMAKE_CURRENT_SOURCE_DIR}/dxc/cmake/caches/PredefinedParams.cmake" -S "${CMAKE_CURRENT_SOURCE_DIR}/dxc" -B "${DXC_BUILD_DIR}" -G "${CMAKE_GENERATOR}" "-Ax64" -T "${CMAKE_GENERATOR_TOOLSET}" ${NBL_DXC_CMAKE_OPTIONS}
-		RESULT_VARIABLE DXC_CMAKE_RESULT
-		OUTPUT_VARIABLE DXC_CMAKE_STREAM_PIPE
-	)
-else()
-	execute_process(COMMAND "${CMAKE_COMMAND}" -C "${CMAKE_CURRENT_SOURCE_DIR}/dxc/cmake/caches/PredefinedParams.cmake" -S "${CMAKE_CURRENT_SOURCE_DIR}/dxc" -B "${DXC_BUILD_DIR}" -G "${CMAKE_GENERATOR}" -T "${CMAKE_GENERATOR_TOOLSET}" ${NBL_DXC_CMAKE_OPTIONS}
-		RESULT_VARIABLE DXC_CMAKE_RESULT
-		OUTPUT_VARIABLE DXC_CMAKE_STREAM_PIPE
-	)
-endif()
-
-if(NOT "${DXC_CMAKE_RESULT}" STREQUAL "0")
-	message(FATAL_ERROR "${DXC_CMAKE_STREAM_PIPE}")
-endif()
+###############################
 
 set(CMAKE_CXX_STANDARD 20) # it's mandatory
 unset(CMAKE_CXX_STANDARD_REQUIRED)
@@ -138,7 +126,7 @@ else()
 	endif()
 endif()
 
-set(DXC_DLL_NAME 
+set(DXC_DLL_NAME # ONE PLACE REFERENCE
 	$<IF:$<CONFIG:Debug>,${_NBL_DXC_DEBUG_DLL_NAME_},${_NBL_DXC_RELEASE_DLL_NAME_}>
 CACHE INTERNAL "" FORCE)
 
@@ -146,7 +134,7 @@ set(DXC_COMPILE_FLAGS_RELEASE "")
 set(DXC_COMPILE_FLAGS_RWDI "")
 set(DXC_COMPILE_FLAGS_DEBUG "")
 
-set(DXC_COMPILE_FLAGS
+set(DXC_COMPILE_FLAGS # TO REMOVE
 	$<$<CONFIG:Release>:${DXC_COMPILE_FLAGS_RELEASE}>$<$<CONFIG:Debug>:${DXC_COMPILE_FLAGS_DEBUG}>$<$<CONFIG:RelWithDebInfo>:${DXC_COMPILE_FLAGS_RWDI}>
 CACHE INTERNAL "" FORCE)
 
